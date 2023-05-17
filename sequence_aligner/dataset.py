@@ -35,7 +35,9 @@ class TrainingDataset(Dataset):
             self.texts.append(example["content"])
             self.annotations.append(example["annotations"])
         ###TOKENIZE All THE DATA
-        tokenized_batch = self.tokenizer(self.texts, add_special_tokens=False)
+        tokenized_batch = self.tokenizer(self.texts,
+                                         return_offsets_mapping=True,
+                                         add_special_tokens=False)
         ###ALIGN LABELS ONE EXAMPLE AT A TIME
         aligned_labels = []
         for ix in range(len(tokenized_batch.encodings)):
@@ -70,9 +72,14 @@ class TrainingDataset(Dataset):
                         ),  # -100 is a special token for padding of labels,
                         attention_masks=(
                             encoding.attention_mask[start:end]
-                            + [0]
-                            * padding_to_add  # 0'd attenetion masks where we added padding
+                            + [0] * padding_to_add
+                            # 0'd attention masks where we added padding
                         ),
+                        offsets=(
+                            encoding.offsets[start:end]
+                            + [(0, 0)] * padding_to_add
+                            # 0'd offsets where we added padding
+                        )
                     )
                 )
 
